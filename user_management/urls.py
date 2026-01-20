@@ -15,8 +15,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from debug_toolbar.toolbar import debug_toolbar_urls
 from django.urls import path
-from tasks.views import manager_dashboard, user_dashboard, toppart, test, create_task
+from tasks.views import manager_dashboard, user_dashboard, toppart, test, create_task, view_task
 
 urlpatterns = [
     path("/", manager_dashboard),
@@ -24,5 +25,6 @@ urlpatterns = [
     path("manager_dashboard/", manager_dashboard),
     path("user_dashboard/", user_dashboard),
     path("test/", test),
-    path("create-task/", create_task)
-]
+    path("create-task/", create_task),
+    path("view_task/", view_task)
+] + debug_toolbar_urls()
