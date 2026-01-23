@@ -1,7 +1,6 @@
 from django.db import models
 
 # Create your models here.
-
 class Project(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
@@ -55,11 +54,12 @@ class TaskDetail(models.Model):
     
     task = models.OneToOneField(Task, on_delete=models.CASCADE, related_name='details')
     
-    assigned_to = models.CharField(max_length=100)
+    # assigned_to = models.CharField(max_length=100)
     Priority = models.CharField(max_length=2, choices=PRIORITY_OPTIONS, default=MEDIUM)
     notes = models.TextField(blank=True, null=True)
     
     def __str__(self):
         return f"Details Form Task {self.task.title}"
+    
     
 #Many to One

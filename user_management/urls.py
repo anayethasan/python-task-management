@@ -17,14 +17,16 @@ Including another URLconf
 from django.contrib import admin
 from debug_toolbar.toolbar import debug_toolbar_urls
 from django.urls import path
-from tasks.views import manager_dashboard, user_dashboard, toppart, test, create_task, view_task
+from tasks.views import manager_dashboard, user_dashboard, toppart, test, create_task, view_task, update_task, delete_task
 
 urlpatterns = [
-    path("/", manager_dashboard),
+    path("/", manager_dashboard, name='manager_dashboard'),
     path("dashboard/", toppart),
-    path("manager_dashboard/", manager_dashboard),
+    path("manager_dashboard/", manager_dashboard, name='manager_dashboard'),
     path("user_dashboard/", user_dashboard),
     path("test/", test),
-    path("create-task/", create_task),
-    path("view_task/", view_task)
+    path("create-task/", create_task, name='create-task'),
+    path("view_task/", view_task),
+    path("update_task/<int:id>/", update_task, name='update_task'),
+    path("delete_task/<int:id>/", delete_task, name='delete_task')
 ] + debug_toolbar_urls()
