@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'tasks',
     'user_management',
+    'user',
+    'core',
     "debug_toolbar",
 ]
 
