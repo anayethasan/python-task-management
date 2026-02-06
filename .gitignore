@@ -1,2 +1,5 @@
 node_modules
 task_management
+
+__pycache__/
+*.pyc
