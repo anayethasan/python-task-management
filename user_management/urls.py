@@ -2,7 +2,7 @@ from django.contrib import admin
 from debug_toolbar.toolbar import debug_toolbar_urls
 from django.urls import path, include
 from tasks.views import manager_dashboard, user_dashboard, toppart, test, create_task, view_task, update_task, delete_task
-from core.views import home
+from core.views import home, no_permission
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -16,4 +16,5 @@ urlpatterns = [
     path("delete_task/<int:id>/", delete_task, name='delete_task'),
     path('user/', include("user.urls")),
     path('', home),
+    path('no-permission', no_permission, name='no-permission')
 ] + debug_toolbar_urls()

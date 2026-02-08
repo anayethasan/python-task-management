@@ -1,7 +1,7 @@
 from django import forms
 import re
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission, Group
 from tasks.forms import StyledFormMixin
 from django.contrib.auth.forms import AuthenticationForm
 
@@ -28,14 +28,18 @@ class CustomRegistrationForm(StyledFormMixin, forms.ModelForm):
         fields = ['username', 'first_name', 'last_name',
                   'password1', 'confirm_password', 'email']
     
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.apply_styled_widgets()  
+    
     def clean_email(self):
-            email = self.cleaned_data.get('email')
-            email_exists = User.objects.filter(email=email).exists()
+        email = self.cleaned_data.get('email')
+        email_exists = User.objects.filter(email=email).exists()
 
-            if email_exists:
-                raise forms.ValidationError("Email already exists")
+        if email_exists:
+            raise forms.ValidationError("Email already exists")
 
-            return email
+        return email
 
     def clean_password1(self):
         password1 = self.cleaned_data.get('password1')
@@ -64,7 +68,7 @@ class CustomRegistrationForm(StyledFormMixin, forms.ModelForm):
 
         return password1
 
-    def clean(self):  # non field error
+    def clean(self):
         cleaned_data = super().clean()
         password1 = cleaned_data.get('password1')
         confirm_password = cleaned_data.get('confirm_password')
@@ -78,3 +82,31 @@ class CustomRegistrationForm(StyledFormMixin, forms.ModelForm):
 class LoginForm(StyledFormMixin, AuthenticationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.apply_styled_widgets()
+        
+        
+class AssignRoleForm(StyledFormMixin, forms.Form):
+    role = forms.ModelChoiceField(
+        queryset=Group.objects.all(),
+        empty_label="Select a Role"
+    )
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.apply_styled_widgets()  
+    
+class CreateGroupForm(StyledFormMixin, forms.ModelForm):
+    permissions = forms.ModelMultipleChoiceField(
+        queryset=Permission.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label='Assign Permission'
+    )
+    
+    class Meta:
+        model = Group
+        fields = ['name', 'permissions']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.apply_styled_widgets()  
