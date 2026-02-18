@@ -1,14 +1,6 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Form</title>
-    <link rel="stylesheet" href="{% static 'css/output.css' %}">
-</head>
-<body>
-
+{% extends "base.html" %}
+{% block title %}Create Task{% endblock title %}
+{% block content %}
 <div class="w-1/2 mx-auto mt-8">
         <div>
             {% if messages %}
@@ -17,19 +9,17 @@
                 {% endfor %}
             {% endif %}
         </div>
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
             
             {% csrf_token %}
             {{ task_form }}
             {{ task_detail_form }}
             <button
                 type="submit"
-                class="w-full bg-rose-600 px-4 py-2 text-white rounded-lg hover:bg-rose-700 transition">
+                class="w-full bg-rose-600 px-4 py-2 text-white rounded-lg hover:bg-rose-700 transition mt-8">
                 Submit
             </button>
         </form>
-    </div>
+</div>
 
-
-</body>
-</html>
+{% endblock content %}

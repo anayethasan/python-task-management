@@ -34,7 +34,7 @@ def sign_in(request):
     form = LoginForm()
     if request.method == 'POST':
         form = LoginForm(data=request.POST)
-        if form is not None:
+        if form.is_valid():
             user = form.get_user()
             login(request, user)
             return redirect('home')

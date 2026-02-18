@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 class Project(models.Model):
@@ -24,7 +25,8 @@ class Task(models.Model):
         ("COMPLETED", "Completed")
     ]
     project = models.ForeignKey(Project, on_delete=models.CASCADE, default=1)
-    assigned_to = models.ManyToManyField(Employee, related_name='tasks')
+    # assigned_to = models.ManyToManyField(Employee, related_name='tasks')//aage Employee er sathe connection chilo akhon connection chage kore user er sathe korechi tai database reset dite hobee
+    assigned_to = models.ManyToManyField(User, related_name='tasks')
     title = models.CharField(max_length=250)
     description = models.TextField()
     status = models.CharField(max_length=250, choices=STATUS_CHOICES, default="PENDING")
@@ -55,6 +57,7 @@ class TaskDetail(models.Model):
     task = models.OneToOneField(Task, on_delete=models.CASCADE, related_name='details')
     
     # assigned_to = models.CharField(max_length=100)
+    asset = models.ImageField(upload_to='task_asset', blank=True, null=True, default='task_asset/default.png')
     Priority = models.CharField(max_length=2, choices=PRIORITY_OPTIONS, default=MEDIUM)
     notes = models.TextField(blank=True, null=True)
     

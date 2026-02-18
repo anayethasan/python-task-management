@@ -1,0 +1,127 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+
+    {% comment %} fonts cdn {% endcomment %}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+      rel="stylesheet"
+    />
+    {% comment %} styles {% endcomment %}
+     <style>
+        body
+        {
+            font-family: "Inter", sans-serif;
+        }
+     </style>
+
+    <title>{% block title %}TaskMaster - Efficient Task Management{% endblock title %}</title>
+
+  </head>
+  <body class="font-sans bg-gray-100">
+    
+    {% if request.user.is_authenticated %}
+      {% include 'logged_nav.html' %}
+    {% else %}
+      {% include 'non_logged_nav.html' %}
+    {% endif %}
+
+    <main>
+      {% block content %}
+
+      {% endblock content %}
+    </main>
+
+  <footer class="bg-gray-800 text-white mt-12">
+    <div class="max-w-7xl mx-auto px-6 py-12">
+
+      <!-- Grid Layout -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+
+        <!-- Brand -->
+        <div>
+          <h3 class="text-xl font-bold mb-4">TaskMaster</h3>
+          <p class="text-gray-400 leading-relaxed">
+            Empowering teams with efficient task management solutions.
+          </p>
+        </div>
+
+        <!-- Quick Links -->
+        <div>
+          <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+          <ul class="space-y-3 text-gray-400">
+            <li><a href="#" class="hover:text-white transition">Home</a></li>
+            <li><a href="#" class="hover:text-white transition">Features</a></li>
+            <li><a href="#" class="hover:text-white transition">Pricing</a></li>
+            <li><a href="#" class="hover:text-white transition">Contact</a></li>
+          </ul>
+        </div>
+
+        <!-- Connect -->
+        <div>
+          <h4 class="text-lg font-semibold mb-4">Connect</h4>
+          <ul class="space-y-3 text-gray-400">
+            <li><a href="#" class="hover:text-white transition">Twitter</a></li>
+            <li><a href="#" class="hover:text-white transition">LinkedIn</a></li>
+            <li><a href="#" class="hover:text-white transition">Facebook</a></li>
+          </ul>
+        </div>
+
+        <!-- Newsletter -->
+        <div>
+          <h4 class="text-lg font-semibold mb-4">Newsletter</h4>
+          <form class="flex flex-col sm:flex-row gap-3">
+            <input
+              type="email"
+              placeholder="Your email"
+              class="w-full px-4 py-2 rounded-md text-gray-800 focus:outline-none"
+              required
+            />
+            <button
+              type="submit"
+              class="bg-blue-500 px-5 py-2 rounded-md hover:bg-blue-600 transition"
+            >
+              Subscribe
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+      <!-- Bottom -->
+      <div class="border-t border-gray-700 mt-12 pt-6 text-center text-sm text-gray-400">
+        &copy; 2026 TaskMaster. All rights reserved.
+      </div>
+
+    </div>
+  </footer>
+
+    <script>
+      document
+        .getElementById("menu-toggle")
+        .addEventListener("click", function () {
+          document.getElementById("mobile-menu").classList.toggle("hidden");
+        });
+
+
+        document
+        .getElementById("user-menu-button")
+        .addEventListener("click", function () {
+          document.getElementById("user-menu").classList.toggle("hidden");
+        });
+
+      // Close the dropdown when clicking outside
+      window.addEventListener("click", function (e) {
+        if (!document.getElementById("user-menu-button").contains(e.target)) {
+          document.getElementById("user-menu").classList.add("hidden");
+        }
+      });
+    </script>
+  </body>
+</html>

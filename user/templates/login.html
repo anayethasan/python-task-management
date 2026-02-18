@@ -1,28 +1,15 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="{% static 'css/output.css' %}">
-</head>
-<body>
-    <h1>Welcome to Authentication System</h1>
-    <div>
-
+{% extends "base.html" %}
+{% block content %}
+    <div class='mx-auto w-1/2 my-9'>
         {% if messages %}
-                {% for message in messages %}
-                    <div class="px-2 py-1 {% if message.tags == 'success' %}bg-green-500 text-white text-center w-1/2{% endif %} ">{{message}}</div>
-                {% endfor %}
+            {% for message in messages %}
+                <div class="px-2 py-1 {% if message.tags == 'success' %}bg-green-500{% endif %} ">{{message}}</div>
+            {% endfor %}
         {% endif %}
-
         <form method='POST'>
             {% csrf_token %}
-            <input type="text" placeholder="Enter your username" name="username">
-            <input type="password" placeholder="Enter your password"name='password'>
-            <button type="submit" class='bg-green-500 text-white py-3 px-2'>Sign In</button>
+            {{ form }}
+            <button class='bg-green-500 px-3 py-2 rounded mt-4 text-white' type="submit">Sign In</button>
         </form>
     </div>
-</body>
-</html>
+{% endblock content %}

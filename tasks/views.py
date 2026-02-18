@@ -8,6 +8,7 @@ from datetime import date
 from django.db.models import Q, Count, Max, Min, Avg
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test, login_required, permission_required
+from user.views import is_admin
 
 # Create your views here.
 def is_manager(user):
@@ -15,7 +16,13 @@ def is_manager(user):
 def is_employee(user):
     return user.groups.filter(name='Employee').exists()
 
-@user_passes_test(is_manager, login_url='no-permission')
+def is_manager_or_admin(user):
+    return user.is_authenticated and (
+        user.groups.filter(name='manager').exists() or
+        user.is_superuser
+    )
+
+@user_passes_test(is_manager_or_admin, login_url='no-permission')
 def manager_dashboard(request):
     #getting task count 
     # total_task = tasks.count()
@@ -97,7 +104,7 @@ def create_task(request):
     
     if request.method == "POST":
         task_form = TaskModelForm(request.POST)
-        task_detail_form = TaskDetailModelForm(request.POST)
+        task_detail_form = TaskDetailModelForm(request.POST, request.FILES)
         
         if task_form.is_valid() and task_detail_form.is_valid():
             """For Model From data"""
@@ -128,6 +135,7 @@ def update_task(request, id):
         if task_form.is_valid() and task_detail_form.is_valid():
             """For Model From data"""
             task = task_form.save()
+            TaskDetail.objects.get_or_create(task=task)
             task_detail = task_detail_form.save(commit=False)
             task_detail.task = task
             task_detail.save()
@@ -142,14 +150,18 @@ def update_task(request, id):
 @permission_required('tasks.delete_task', login_url='no-permission')
 def delete_task(request, id):
     if request.method == 'POST':
-        task = Task.objects.get(id=id)
-        task.delete()
-        messages.success(request, "Task Deleted successfully done !")
+        try:
+            task = Task.objects.get(id=id)
+            task.delete()
+            messages.success(request, 'Task Deleted Successfully')
+        except Task.DoesNotExist:
+            messages.error(request, 'Task not found')
         return redirect('manager_dashboard')
     else:
-        messages.error(request, 'Can not get the operation something wrong')
+        messages.error(request, 'Something went wrong')
         return redirect('manager_dashboard')
-
+    
+    
 def view_task(request):
     #retrive all data from task model
     # task = Task.objects.all()
@@ -184,3 +196,28 @@ def view_task(request):
     tasks = Task.objects.prefetch_related("assigned_to").all()
     return render(request, "show_task.html", {"tasks" : tasks })
 
+@login_required
+@permission_required("tasks.view_task", login_url='no-permission')
+def task_details(request, task_id):
+    task = Task.objects.get(id=task_id)
+    status_choices = Task.STATUS_CHOICES
+
+    if request.method == 'POST':
+        selected_status = request.POST.get('task_status')
+        print(selected_status)
+        task.status = selected_status
+        task.save()
+        return redirect('task-details', task.id)
+
+    return render(request, 'task_details.html', {"task": task, 'status_choices': status_choices})
+
+@login_required
+def dashboard(request):
+    if is_manager(request.user):
+        return redirect('manager_dashboard')
+    elif is_employee(request.user):
+        return redirect('user_dashboard')
+    elif is_admin(request.user):
+        return redirect('admin-dashboard')
+
+    return redirect('no-permission')
