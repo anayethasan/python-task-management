@@ -16,6 +16,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# django ke janano je ami customUser babohar korechi
+AUTH_USER_MODEL = 'user.CustomUser'
+
 
 # Application definition
 

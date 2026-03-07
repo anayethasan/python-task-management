@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth.forms import UserChangeForm
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group
+# from django.contrib.auth.models import User 
 from django.contrib.auth import login, logout, authenticate
 from user.forms import CustomRegistrationForm, LoginForm, AssignRoleForm, CreateGroupForm, ChangePasswordForm, CustomPasswordResetForm, CustomPasswordResetConfirmForm
 from django.contrib import messages
@@ -9,10 +10,56 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Prefetch
 from django.contrib.auth.views import LoginView, PasswordChangeView, PasswordResetView, PasswordResetConfirmView
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, UpdateView
 from django.urls import reverse_lazy
+from user.forms import EditProfileForm
+from django.contrib.auth import get_user_model
 
 #Test for user
+User = get_user_model()
+
+"""
+class EditProfileView(UpdateView):
+    model = User
+    form_class = EditProfileForm
+    template_name = 'accounts/update_profile.html'
+    context_object_name = 'form'
+
+    def get_object(self):
+        return self.request.user
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['userprofile'] = UserProfile.objects.get(user=self.request.user)
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_profile = UserProfile.objects.get(user=self.request.user)
+        print("views", user_profile)
+        context['form'] = self.form_class(
+            instance=self.object, userprofile=user_profile)
+        return context
+
+    def form_valid(self, form):
+        form.save(commit=True)
+        return redirect('profile')
+"""
+class EditProfileView(UpdateView):
+    model = User
+    form_class = EditProfileForm
+    template_name = 'accounts/update_profile.html'
+    context_object_name = 'form'
+    
+    def get_object(self):
+        return self.request.user
+    
+    def form_valid(self, form):
+        form.save(commit=True)
+        return redirect('profile')
+    
+    
+
 def is_admin(user):
     return user.groups.filter(name='Admin').exists()
 
@@ -136,6 +183,10 @@ class ProfileView(TemplateView):
         context['name'] = user.get_full_name()
         context['email'] = user.email
         context['username'] = user.username
+        context['bio'] = user.bio
+        context['profile_image'] = user.profile_image
+        
+        
         context['member_since'] = user.date_joined
         context['last_login'] = user.last_login
         

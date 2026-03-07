@@ -1,6 +1,9 @@
 from django.db import models
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
+from django.conf import settings
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 # Create your models here.
 class Project(models.Model):
     name = models.CharField(max_length=100)
@@ -26,7 +29,7 @@ class Task(models.Model):
     ]
     project = models.ForeignKey(Project, on_delete=models.CASCADE, default=1)
     # assigned_to = models.ManyToManyField(Employee, related_name='tasks')//aage Employee er sathe connection chilo akhon connection chage kore user er sathe korechi tai database reset dite hobee
-    assigned_to = models.ManyToManyField(User, related_name='tasks')
+    assigned_to = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='tasks')
     title = models.CharField(max_length=250)
     description = models.TextField()
     status = models.CharField(max_length=250, choices=STATUS_CHOICES, default="PENDING")
