@@ -14,7 +14,7 @@ from django.views import View
 from django.utils.decorators import method_decorator
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.views.generic.base import ContextMixin
-from django.views.generic import ListView, DetailView, UpdateView
+from django.views.generic import ListView, DetailView, UpdateView, View
 
 # Class based-view code
 class Greeting(View):
@@ -40,43 +40,33 @@ def is_manager_or_admin(user):
         user.is_superuser
     )
 
-@user_passes_test(is_manager_or_admin, login_url='no-permission')
-def manager_dashboard(request):
-    #getting task count 
-    # total_task = tasks.count()
-    # completed_task = Task.objects.filter(status='COMPLETED').count()
-    # in_progress_task = Task.objects.filter(status='IN_PROGRESS').count()
-    # pending_task = Task.objects.filter(status='PENDING').count()
-    
-    type = request.GET.get('type', 'all')
-    
-    # tasks = Task.objects.select_related('details').prefetch_related('assigned_to').all()
-    
-    counts = Task.objects.aggregate(
-        total = Count('id'),
-        completed = Count('id', filter=Q(status='COMPLETED')),
-        in_progress = Count('id', filter=Q(status='IN_PROGRESS')),
-        pending = Count('id', filter=Q(status='PENDING')),
-    )
-    
-    #Retriving task data
-    
-    base_query = Task.objects.select_related('details').prefetch_related('assigned_to')
-    
-    if(type == 'completed'):
-        tasks = base_query.filter(status='COMPLETED')
-    elif(type == 'in-progress'):
-        tasks = base_query.filter(status='IN_PROGRESS')
-    elif(type == 'pending'):
-        tasks = base_query.filter(status='PENDING')
-    else:
-        tasks = base_query.all()
-    
-    context = {
-        "tasks": tasks,
-        "counts": counts,
-    }
-    return render(request, "dashboard/dashboard.html", context)
+@method_decorator(user_passes_test(is_manager_or_admin, login_url='no-permission'), name='dispatch')
+class ManagerDashboard(ListView):
+    template_name = 'dashboard/dashboard.html'
+    context_object_name = 'tasks'
+
+    def get_queryset(self):
+        task_type = self.request.GET.get('type', 'all')
+        base_query = Task.objects.select_related('details').prefetch_related('assigned_to')
+
+        if task_type == 'completed':
+            return base_query.filter(status='COMPLETED')
+        elif task_type == 'in-progress':
+            return base_query.filter(status='IN_PROGRESS')
+        elif task_type == 'pending':
+            return base_query.filter(status='PENDING')
+        else:
+            return base_query.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['counts'] = Task.objects.aggregate(
+            total=Count('id'),
+            completed=Count('id', filter=Q(status='COMPLETED')),
+            in_progress=Count('id', filter=Q(status='IN_PROGRESS')),
+            pending=Count('id', filter=Q(status='PENDING')),
+        )
+        return context
 
 def toppart(request):
     return render(request, "dashboard/toppart.html")
@@ -91,32 +81,6 @@ def test(request):
 @login_required
 @permission_required('tasks.add_task', login_url='no-permission')
 def create_task(request):
-    # employees = Employee.objects.all()
-    # form = TaskForm(employees=employees)
-    
-    # if request.method == "POST":
-    #     form = TaskForm(request.POST, employees=employees)
-    #     if form.is_valid():
-    #         data = form.cleaned_data
-    #         title = data.get('title')
-    #         description = data.get('description')
-    #         due_date = data.get('due_date')
-    #         assigned_to = data.get('assigned_to')
-            
-    #         task = Task.objects.create(title=title, description=description, due_date=due_date)
-            
-    #         #Assign task to employee
-    #         for emp_id in assigned_to:
-    #             employee = Employee.objects.get(id = emp_id)
-    #             task.assigned_to.add(employee)
-            
-    #     return HttpResponse("Task Added Successfully")
-    
-    # context = {"form": form}
-    # return render(request, "dashboard/task_form.html", context)
-
-
-    # employees = Employee.objects.all()
     task_form = TaskModelForm()
     task_detail_form = TaskDetailModelForm()
     
@@ -246,10 +210,13 @@ class UpdateTask(UpdateView):
             return redirect('update-task', self.object.id)
         return redirect('update-task', self.object.id)
     
-@login_required
-@permission_required('tasks.delete_task', login_url='no-permission')
-def delete_task(request, id):
-    if request.method == 'POST':
+
+# delete task 
+@method_decorator(login_required, name='dispatch')
+@method_decorator(permission_required('tasks.delete_task', login_url='no-permission'), name='dispatch')
+class DeleteTask(View):
+
+    def post(self, request, id):
         try:
             task = Task.objects.get(id=id)
             task.delete()
@@ -257,44 +224,11 @@ def delete_task(request, id):
         except Task.DoesNotExist:
             messages.error(request, 'Task not found')
         return redirect('manager_dashboard')
-    else:
+
+    def get(self, request, id):
         messages.error(request, 'Something went wrong')
         return redirect('manager_dashboard')
-    
-    
-def view_task(request):
-    #retrive all data from task model
-    # task = Task.objects.all()
-    
-    #retrive a specific task
-    # task3 = Task.objects.get(id = 1)
-    
-    """Show the task that are completed"""
-    # tasks = Task.objects.filter(status="COMPLETED")
-    
-    """show the data which date is today"""
-    # tasks = Task.objects.filter(due_date=date.today())
-    
-    """Show the task whose priority is not low"""
-    # tasks = TaskDetail.objects.exclude(Priority="L")
-    
-    """ Show the task that contain any word will have 'c' and status pending"""
-    # tasks = Task.objects.filter(title__icontains="c", status="PENDING")
-    
-    """ Show the task which are pending or in_progress"""
-    # tasks = Task.objects.filter(Q(status="PENDING") | Q(status="IN_PROGRESS"))
-    
-    """ Show the data when value exists"""
-    # tasks = Task.objects.filter(status="PENDING").exists()
-    
-    """Selected_related(ForeignKey, OneToOne)"""
-    # tasks = Task.objects.select_related('details').all()
-    # tasks = TaskDetail.objects.select_related('task').all()
-    # tasks = Task.objects.select_related('project').all()
-    
-    """ prefetch_related (reverse ForeignKey, manytomany) """
-    tasks = Task.objects.prefetch_related("assigned_to").all()
-    return render(request, "show_task.html", {"tasks" : tasks })
+
 
 view_project_decorators = [login_required, permission_required(
     "projects.view_project", login_url='no-permission')]
